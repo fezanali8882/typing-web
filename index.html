@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeFast | Professional Typing Intelligence</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for premium analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+    <div class="background-blob"></div>
+    <div class="background-blob-2"></div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="resetTest()" style="cursor: pointer;">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">TypeFast</span>
+            </div>
+            <div class="nav-right">
+                <div class="main-hub-nav">
+                    <a href="practice.html" class="nav-hub-link" id="nav-practice">
+                        <span class="link-icon">⚡</span> Practice
+                    </a>
+                    <a href="#" class="nav-hub-link" id="nav-leaderboard" onclick="showLeaderboard()">
+                        <span class="link-icon">🏆</span> Leaderboard
+                    </a>
+                </div>
+                
+                <div class="settings-toggles">
+                    <button id="auth-btn" class="action-pill" title="Login / Profile">
+                        <span class="pill-icon">👤</span>
+                        <span class="pill-text" id="auth-text">Profile</span>
+                    </button>
+                    <button id="sound-toggle" class="action-pill" title="Toggle Sounds">
+                        <span class="pill-icon" id="sound-icon">🔊</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div id="main-typing-container">
+            <!-- Unified Typing & Keyboard Section -->
+            <section class="typing-section glassmorphism slide-up">
+                <div class="card-header">
+                    <div class="control-groups">
+                        <div class="control-group">
+                            <span class="control-label">Difficulty</span>
+                            <div class="difficulty-toggles">
+                                <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                                <button class="difficulty-btn" data-difficulty="intermediate">Mid</button>
+                                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <span class="control-label">Mode</span>
+                            <div class="mode-toggles">
+                                <button class="mode-btn active" data-mode="time">⏱ Time</button>
+                                <button class="mode-btn" data-mode="words">📝 Words</button>
+                            </div>
+                        </div>
+                        <div class="control-group" id="time-group">
+                            <span class="control-label">Duration</span>
+                            <div class="timer-toggles">
+                                <button class="timer-btn active" data-time="30">30s</button>
+                                <button class="timer-btn" data-time="60">60s</button>
+                                <button class="timer-btn" data-time="custom">Custom</button>
+                            </div>
+                        </div>
+                        <div class="control-group" id="words-group" style="display:none">
+                            <span class="control-label">Words</span>
+                            <div class="words-toggles">
+                                <button class="words-btn active" data-words="25">25</button>
+                                <button class="words-btn" data-words="50">50</button>
+                                <button class="words-btn" data-words="100">100</button>
+                                <button class="words-btn" data-words="custom">Custom</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="live-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">WPM</span>
+                            <span id="live-wpm" class="stat-value highlight">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Accuracy</span>
+                            <span id="live-accuracy" class="stat-value">100%</span>
+                        </div>
+                        <div class="stat-item" id="timer-stat">
+                            <span class="stat-label" id="timer-label">Timer</span>
+                            <span id="timer-display" class="stat-value secondary">30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="para-header-actions">
+                    <div id="last-session-pill" class="last-session-pill">
+                        <span class="pill-label">Previous:</span>
+                        <span id="last-wpm-val" class="pill-value">0</span> <span class="pill-unit">WPM</span>
+                    </div>
+                </div>
+
+                <div class="session-progress-container">
+                    <div id="session-progress-fill" class="session-progress-fill"></div>
+                </div>
+
+                <div class="paragraph-display" id="paragraph-display">
+                    <div class="placeholder-text">Press Start to begin...</div>
+                </div>
+
+                <div class="input-container">
+                    <input type="text" id="typing-input" placeholder="Start typing..." disabled autocomplete="off">
+                </div>
+                
+                <!-- Physical Keyboard Structure (Static for instant load) -->
+                <div class="integrated-keyboard">
+                    <div id="keyboard-container" class="keyboard-wrapper">
+                        <!-- Row 1 -->
+                        <div class="keyboard-row">
+                            <div class="key" id="keyboard-key-q">Q</div>
+                            <div class="key" id="keyboard-key-w">W</div>
+                            <div class="key" id="keyboard-key-e">E</div>
+                            <div class="key" id="keyboard-key-r">R</div>
+                            <div class="key" id="keyboard-key-t">T</div>
+                            <div class="key" id="keyboard-key-y">Y</div>
+                            <div class="key" id="keyboard-key-u">U</div>
+                            <div class="key" id="keyboard-key-i">I</div>
+                            <div class="key" id="keyboard-key-o">O</div>
+                            <div class="key" id="keyboard-key-p">P</div>
+                            <div class="key" id="keyboard-key-[">[</div>
+                            <div class="key" id="keyboard-key-]">]</div>
+                        </div>
+                        <!-- Row 2 -->
+                        <div class="keyboard-row">
+                            <div class="key" id="keyboard-key-a">A</div>
+                            <div class="key" id="keyboard-key-s">S</div>
+                            <div class="key" id="keyboard-key-d">D</div>
+                            <div class="key" id="keyboard-key-f">F</div>
+                            <div class="key" id="keyboard-key-g">G</div>
+                            <div class="key" id="keyboard-key-h">H</div>
+                            <div class="key" id="keyboard-key-j">J</div>
+                            <div class="key" id="keyboard-key-k">K</div>
+                            <div class="key" id="keyboard-key-l">L</div>
+                            <div class="key" id="keyboard-key-;">;</div>
+                            <div class="key" id="keyboard-key-full">Enter</div>
+                        </div>
+                        <!-- Row 3 -->
+                        <div class="keyboard-row">
+                            <div class="key" id="keyboard-key-z">Z</div>
+                            <div class="key" id="keyboard-key-x">X</div>
+                            <div class="key" id="keyboard-key-c">C</div>
+                            <div class="key" id="keyboard-key-v">V</div>
+                            <div class="key" id="keyboard-key-b">B</div>
+                            <div class="key" id="keyboard-key-n">N</div>
+                            <div class="key" id="keyboard-key-m">M</div>
+                            <div class="key" id="keyboard-key-,">,</div>
+                            <div class="key" id="keyboard-key-.">.</div>
+                            <div class="key" id="keyboard-key-/">/</div>
+                        </div>
+                        <!-- Row 4 -->
+                        <div class="keyboard-row">
+                            <div class="key key-space" id="keyboard-key-space">Space</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button id="start-btn" class="primary-btn">Start Test</button>
+                    <button id="restart-btn" class="secondary-btn" style="display: none;">Reset</button>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- Results Section (PRO Dashboard) -->
+        <div id="results-section" class="results-container" style="display: none;">
+            <div class="results-header">
+                <h2>Analysis Dashboard</h2>
+                <p>Complete breakdown of your typing intelligence metrics</p>
+            </div>
+
+            <!-- Smart AI Feedback Bubble ✨ -->
+            <div id="smart-feedback" class="smart-feedback-bubble glassmorphism slide-up" style="display: none;">
+                <span class="ai-sparkle">✨</span>
+                <span id="smart-msg">Connecting to intelligence engine...</span>
+            </div>
+            
+            <div class="results-grid">
+                <div class="result-card glassmorphism slide-up">
+                    <span class="res-label">Net Speed</span>
+                    <span id="final-wpm" class="res-value">0</span>
+                    <div class="stat-pill">WPM</div>
+                </div>
+                <div class="result-card glassmorphism slide-up" style="animation-delay: 0.1s;">
+                    <span class="res-label">Accuracy Score</span>
+                    <span id="final-accuracy" class="res-value">0%</span>
+                    <div class="stat-pill" style="color:#10b981; background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.2);">Precision</div>
+                </div>
+                <div class="result-card glassmorphism slide-up" style="animation-delay: 0.2s;">
+                    <span class="res-label">Raw Performance</span>
+                    <span id="final-cpm" class="res-value">0</span>
+                    <div class="stat-pill" style="color:#8b5cf6; background:rgba(139,92,246,0.1); border-color:rgba(139,92,246,0.2);">CPM</div>
+                </div>
+            </div>
+
+            <div class="analytics-grid" style="grid-template-columns: 1fr; margin-top: 2rem;">
+                <div class="graph-card glassmorphism slide-up" style="animation-delay: 0.4s; padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3 style="margin: 0; text-align: left; font-size: 1.25rem;"><span style="font-size: 1.5rem;">📈</span> Speed Velocity Pulse</h3>
+                    </div>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-actions" style="margin-top: 2rem; margin-bottom: 3rem; display: flex; gap: 1.5rem; justify-content: center;">
+                <button class="primary-btn" onclick="resetTest()" style="max-width: 300px; padding: 1rem 2rem;">START NEW SESSION 🔄</button>
+            </div>
+        </div>
+
+            <div class="test-actions" style="margin-top: 3rem; justify-content: center; gap: 1.5rem;">
+                <button class="primary-btn" onclick="resetTest()">Start New Session 🏠</button>
+            </div>
+        </div>
+
+        <!-- Dedicated Practice & Drill Page 🎮 -->
+        <div id="practice-section" class="results-container" style="display: none;">
+            <div class="results-header" style="text-align: center;">
+                <span class="rank-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">Training Hub ⚡</span>
+                <h2>Practice Academy</h2>
+                <p>Master specific skills with targeted drilling</p>
+            </div>
+
+            <div class="practice-grid">
+                <div class="practice-card glassmorphism" onclick="startPractice('accuracy')">
+                    <div class="pc-icon">🎯</div>
+                    <h3>Precision Training</h3>
+                    <p>No mistakes allowed. If you miss, the drill ends. Build clinical accuracy.</p>
+                    <button class="mini-btn">Start Drill</button>
+                </div>
+                <div class="practice-card glassmorphism" onclick="startPractice('speed')">
+                    <div class="pc-icon">⚡</div>
+                    <h3>Speed Burst</h3>
+                    <p>Push your WPM limits by ignoring minor errors. Focus on raw velocity.</p>
+                    <button class="mini-btn">Start Drill</button>
+                </div>
+                <div class="practice-card glassmorphism" id="weak-drill-card" onclick="startPractice('weak')">
+                    <div class="pc-icon">🔤</div>
+                    <h3>Weak Key Drill</h3>
+                    <p>Focus specifically on your error keys. Master the characters you miss.</p>
+                    <button class="mini-btn">Start Drill</button>
+                </div>
+            </div>
+
+            <div class="test-actions" style="margin-top: 4rem; justify-content: center;">
+                <button class="secondary-btn" onclick="showCoachingDashboard()">Back to Coach Analysis 🧠</button>
+                <button class="primary-btn" onclick="resetTest()">Main Engine 🏠</button>
+            </div>
+        </div>
+
+        <!-- Custom Text Modal -->
+        <div id="custom-text-modal" class="modal">
+            <div class="modal-content glassmorphism">
+                <h3>Custom Typing Text</h3>
+                <textarea id="custom-text-input" placeholder="Paste your own text here..."></textarea>
+                <div class="modal-actions">
+                    <button id="save-custom-text" class="primary-btn">Apply Text</button>
+                    <button id="close-modal" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Leaderboard Section (HEAVY) -->
+        <div id="leaderboard-section" class="results-container" style="display: none;">
+            <div class="results-header">
+                <span class="rank-badge" style="background: rgba(250, 204, 21, 0.1); color: #facc15; border-color: rgba(250, 204, 21, 0.2);">Global Rankings 🔥</span>
+                <h2>World Leaderboard</h2>
+                <p>The fastest typists in the community.</p>
+            </div>
+
+            <div class="leaderboard-wrapper glassmorphism" style="margin-top: 2rem; padding: 1.5rem; border-radius: 24px;">
+                <table class="leaderboard-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <th style="padding: 1rem; opacity: 0.5; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Rank</th>
+                            <th style="padding: 1rem; opacity: 0.5; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">User</th>
+                            <th style="padding: 1rem; opacity: 0.5; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Best WPM</th>
+                            <th style="padding: 1rem; opacity: 0.5; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="test-actions" style="margin-top: 2.5rem; justify-content: center;">
+                <button id="close-leaderboard" class="primary-btn">Back to Home 🏠</button>
+            </div>
+        </div>
+
+        <!-- User Profile Dashboard Popup (ULTRA-PRO GAMIFIED) -->
+        <div id="profile-modal" class="modal">
+            <div class="modal-content glassmorphism" style="max-width: 600px;">
+                <div class="profile-header-pro">
+                    <div class="profile-main-info">
+                        <div class="profile-avatar-pro" id="prof-avatar">👤</div>
+                        <div class="profile-title-group">
+                            <h3 id="profile-username">User Profile</h3>
+                            <div class="rank-tag-pro" id="prof-rank">Beginner</div>
+                        </div>
+                    </div>
+                    <div class="level-badge-pro">
+                        <span class="lvl-label">LVL</span>
+                        <span class="lvl-val" id="prof-level">1</span>
+                    </div>
+                </div>
+
+                <!-- XP Progress Bar -->
+                <div class="xp-container-pro">
+                    <div class="xp-labels">
+                        <span id="prof-level-tag">LEVEL 1 ⚡</span>
+                        <span id="prof-xp-display">0 / 100 XP</span>
+                    </div>
+                    <div class="xp-bar-bg">
+                        <div id="prof-xp-fill" class="xp-bar-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- History Graph (Last 10 Tests) 📈 -->
+                <div class="history-chart-container">
+                    <div class="chart-header-pro">
+                        <span>Speed Growth (Last 10 Tests)</span>
+                        <div class="chart-legend">
+                            <span class="legend-dot"></span> WPM
+                        </div>
+                    </div>
+                    <canvas id="user-history-chart"></canvas>
+                </div>
+
+                <div class="pro-stats-grid">
+                    <div class="pro-stat-card">
+                        <span class="ps-label">Best Speed</span>
+                        <span id="prof-best-wpm" class="ps-value">0</span>
+                        <span class="ps-sub" id="prof-improvement-tag">Keep going!</span>
+                    </div>
+                    <div class="pro-stat-card">
+                        <span class="ps-label">Current Streak</span>
+                        <span id="streak-val" class="ps-value" style="color: #fb923c;">0</span>
+                        <span class="ps-sub">Max: <span id="prof-max-streak">0</span> days</span>
+                    </div>
+                    <div class="pro-stat-card">
+                        <span class="ps-label">Avg Accuracy</span>
+                        <span id="prof-avg-acc" class="ps-value" style="color: #10b981;">0%</span>
+                        <span class="ps-sub">Across all tests</span>
+                    </div>
+                </div>
+
+                <div class="pro-data-row">
+                    <div class="pro-data-item">
+                        <span class="pdi-val" id="prof-total-tests">0</span>
+                        <span class="pdi-lbl">Tests | Avg: <span id="prof-avg-wpm">0</span> WPM</span>
+                    </div>
+                </div>
+
+                <div class="achievements-section-pro">
+                    <p class="section-title-pro">Hall of Fame 🏆</p>
+                    <div class="achievements-row-pro">
+                        <div class="ach-item unlocked" id="ach-50" title="First 50 WPM">🥉</div>
+                        <div class="ach-item locked" id="ach-70" title="Pro 70+ WPM">🥈</div>
+                        <div class="ach-item locked" id="ach-90" title="Master 90+ WPM">🥇</div>
+                        <div class="ach-item locked" id="ach-streak" title="7 Day Streak">🔥</div>
+                        <div class="ach-item locked" id="ach-perfect" title="100% Accuracy">⚡</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions-pro">
+                    <button class="primary-btn" id="close-profile">Back to Test</button>
+                    <button class="secondary-btn" id="logout-btn">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compact Custom Value Modal (for Time & Words) -->
+        <div id="custom-value-modal" class="modal">
+            <div class="modal-content-mini glassmorphism">
+                <p id="custom-value-label">Enter custom value</p>
+                <div class="mini-input-row">
+                    <input type="number" id="custom-value-input" placeholder="e.g. 120" min="5">
+                    <button id="save-custom-value" class="primary-btn">Apply</button>
+                    <button id="close-custom-value" class="secondary-btn">✕</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pre-test Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-overlay" style="display: none;">
+        <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
+    <!-- Firebase SDK (v9 Compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>

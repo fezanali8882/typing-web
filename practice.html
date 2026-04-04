@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Hub | TypeFast Academy ⚡</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { padding: 2rem; background: #0f172a; min-height: 100vh; overflow-x: hidden; }
+        .practice-layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        .typing-box { 
+            min-height: 250px; 
+            font-size: 1.8rem; 
+            font-family: 'Outfit', monospace; 
+            padding: 3rem; 
+            border-radius: 32px; 
+            position: relative; 
+            overflow-y: auto;
+            max-height: 350px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        
+        .typing-box span { color: rgba(255,255,255,0.15); transition: all 0.2s; position: relative; }
+        .typing-box span.correct { color: white; }
+        .typing-box span.wrong { color: #ef4444; border-bottom: 2px solid #ef4444; border-radius: 2px; background: rgba(239, 68, 68, 0.1); }
+        .typing-box span.active { color: white; background: rgba(255,255,255,0.05); }
+        
+        .typing-box span.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0px;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .hud-stat-pill { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.9rem; font-weight: 600; }
+        #practice-input { position: fixed; opacity: 0; pointer-events: none; top: -100px; }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="background-blob"></div>
+
+    <div class="practice-layout">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Practice Academy</span>
+            </div>
+            <a href="index.html" class="secondary-btn" style="text-decoration: none;">Exit 🏠</a>
+        </div>
+
+        <!-- Practice HUD -->
+        <div class="glassmorphism" style="padding: 2.5rem; border-radius: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div style="display: flex; gap: 1.5rem;">
+                    <div class="hud-stat-pill">Accuracy: <span id="acc-val" style="color: var(--primary);">100</span>%</div>
+                    <div class="hud-stat-pill">Live WPM: <span id="wpm-val" style="color: var(--secondary);">0</span></div>
+                    <div class="hud-stat-pill">Remaining: <span id="progress-val">100</span>%</div>
+                </div>
+                <div class="rank-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">LIVE PERFORMANCE HUB 🧠</div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 2rem; overflow: hidden;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;"></div>
+            </div>
+
+            <!-- Typing Area -->
+            <div id="practice-display" class="typing-box glassmorphism">
+                <div style="opacity: 0.4; text-align: center; margin-top: 5rem; cursor: pointer;" onclick="document.getElementById('start-btn').click()">
+                    Click 'Start Performance Drill' to activate neural engine...
+                </div>
+            </div>
+            <input type="text" id="practice-input" autocomplete="off" spellcheck="false">
+
+            <div style="margin-top: 3rem; text-align: center;">
+                <button id="start-btn" class="primary-btn pulse" style="padding: 1.25rem 5rem; font-size: 1.2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);">Start Performance Drill 🚀</button>
+            </div>
+        </div>
+
+        <!-- Integrated Heatmap -->
+        <div class="heatmap-container">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; opacity: 0.8;">Neural Heatmap: Weak Key Analysis 🧠</h3>
+                <p style="font-size: 0.85rem; opacity: 0.5;">Red highlights indicate low accuracy / High latency keys</p>
+            </div>
+            <div id="keyboard-container" class="keyboard-grid"></div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script>
+        const KEYBOARD_LAYOUT = [
+            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+            ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
+            ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"],
+            ["Space"]
+        ];
+
+        let state = {
+            isRunning: false,
+            text: "",
+            charIndex: 0,
+            mistakes: 0,
+            totalChars: 0,
+            startTime: null,
+            mistakeLog: {},
+            heatmap: {}
+        };
+
+        const display = document.getElementById('practice-display');
+        const input = document.getElementById('practice-input');
+        const startBtn = document.getElementById('start-btn');
+
+        // Init Keyboard
+        function initKeyboard() {
+            const container = document.getElementById('keyboard-container');
+            container.innerHTML = '';
+            KEYBOARD_LAYOUT.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    keyDiv.textContent = key;
+                    const k = key.toLowerCase();
+                    keyDiv.id = `practice-key-${k}`;
+                    if (key === 'Space') keyDiv.classList.add('key-space');
+                    rowDiv.appendChild(keyDiv);
+                    if (!state.heatmap[k]) state.heatmap[k] = { count: 0, mistakes: 0 };
+                });
+                container.appendChild(rowDiv);
+            });
+        }
+
+        async function generateSmartDrill() {
+            // In a real app, fetch from Firestore mistakes. For now, we simulate or use session errors.
+            const user = firebase.auth().currentUser;
+            let weakKeys = ['a', 's', 'd', 'f']; // Defaults
+            
+            if (user) {
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists && doc.data().weakKeys) {
+                    weakKeys = Object.entries(doc.data().weakKeys)
+                        .sort((a,b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(e => e[0]);
+                }
+            }
+
+            const vocabulary = ["precision", "rhythm", "fast", "typing", "mastery", "control", "focus", "mechanics", "keyboard", "speed", "accuracy"];
+            const drillWords = vocabulary.filter(w => weakKeys.some(k => w.includes(k)));
+            
+            state.text = `BEHAVIORAL DRILL: Focus on ${weakKeys.join(', ').toUpperCase()}. ` + 
+                         `Key Repetition: ${weakKeys.join(' ').repeat(5)}. ` +
+                         `Words: ${drillWords.join(' ')}.`;
+            
+            renderText();
+        }
+
+        function renderText() {
+            display.innerHTML = '';
+            state.text.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                if (i === state.charIndex) span.classList.add('active');
+                display.appendChild(span);
+            });
+        }
+
+        function updateHeatmapUI(key, isMistake = false) {
+            let k = key.toLowerCase();
+            if (key === ' ') k = 'space';
+            if (!state.heatmap[k]) return;
+            
+            state.heatmap[k].count++;
+            if (isMistake) state.heatmap[k].mistakes++;
+            
+            const keyEl = document.getElementById(`practice-key-${k}`);
+            if (keyEl) {
+                const ratio = state.heatmap[k].mistakes / (state.heatmap[k].count || 1);
+                if (isMistake) {
+                    keyEl.style.background = 'rgba(239, 68, 68, 0.4)';
+                    setTimeout(() => keyEl.style.background = '', 300);
+                }
+                
+                if (ratio > 0.3) {
+                    keyEl.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.4)';
+                    keyEl.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                }
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!state.isRunning) return;
+            
+            // Handle backspace ⬅️
+            if (e.key === 'Backspace') {
+                if (state.charIndex > 0) {
+                    const spans = display.querySelectorAll('span');
+                    spans[state.charIndex].classList.remove('active');
+                    state.charIndex--;
+                    spans[state.charIndex].classList.remove('correct', 'wrong');
+                    spans[state.charIndex].classList.add('active');
+                    
+                    // Reset stats slightly
+                    updateStats();
+                }
+                return;
+            }
+
+            // Handle typing ⌨️
+            if (e.key.length === 1) {
+                const spans = display.querySelectorAll('span');
+                if (state.charIndex >= state.text.length) return;
+
+                const typedChar = e.key;
+                const expectedChar = state.text[state.charIndex];
+
+                if (typedChar === expectedChar) {
+                    spans[state.charIndex].classList.add('correct');
+                    updateHeatmapUI(typedChar, false);
+                } else {
+                    spans[state.charIndex].classList.add('wrong');
+                    state.mistakes++;
+                    updateHeatmapUI(expectedChar, true);
+                }
+
+                spans[state.charIndex].classList.remove('active');
+                state.charIndex++;
+                
+                if (state.charIndex < state.text.length) {
+                    spans[state.charIndex].classList.add('active');
+                    
+                    // Auto-scroll logic
+                    if (spans[state.charIndex].offsetTop > 100) {
+                        display.scrollTop = spans[state.charIndex].offsetTop - 100;
+                    }
+                } else {
+                    finishSession();
+                }
+
+                // Progress Tracking
+                const progress = Math.round((state.charIndex / state.text.length) * 100);
+                document.getElementById('progress-bar').style.width = `${progress}%`;
+                document.getElementById('progress-val').textContent = 100 - progress;
+
+                updateStats();
+            }
+        });
+
+        function updateStats() {
+            const acc = Math.max(0, 100 - (state.mistakes / (state.charIndex || 1) * 100));
+            document.getElementById('acc-val').textContent = Math.round(acc);
+            
+            const elapsed = (Date.now() - state.startTime) / 60000;
+            const wpm = Math.round((state.charIndex / 5) / elapsed) || 0;
+            document.getElementById('wpm-val').textContent = wpm;
+        }
+
+        function finishSession() {
+            state.isRunning = false;
+            display.innerHTML += ` <span style="color:#10b981; font-weight:800;">DRILL COMPLETE! Analysis Saved.</span>`;
+            startBtn.style.display = 'inline-block';
+            startBtn.textContent = 'Restart Neural Drill 🔄';
+        }
+
+        startBtn.onclick = async () => {
+            state.isRunning = true;
+            state.charIndex = 0;
+            state.mistakes = 0;
+            state.startTime = Date.now();
+            startBtn.style.display = 'none';
+            await generateSmartDrill();
+            input.focus();
+        };
+
+        window.onload = () => {
+            initKeyboard();
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) console.log("Academy: User synced.");
+            });
+        };
+
+        document.addEventListener('click', () => {
+            if (state.isRunning) input.focus();
+        });
+    </script>
+</body>
+</html>

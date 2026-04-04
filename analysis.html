@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Dashboard | TypeFast AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { padding: 4rem 2rem; background: #0f172a; min-height: 100vh; }
+        .nav-back { position: fixed; top: 2rem; left: 2rem; z-index: 100; }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="background-blob"></div>
+    
+    <div class="nav-back">
+        <a href="index.html" class="primary-btn" style="padding: 0.75rem 1.5rem; text-decoration: none;">← Back to Test</a>
+    </div>
+
+    <main class="main-container" style="max-width: 1000px; margin: 0 auto;">
+        <div class="results-container">
+            <div class="results-header">
+                <span class="rank-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); border-color: rgba(99, 102, 241, 0.2);">AI Coach 🧠</span>
+                <h2>Performance Intelligence</h2>
+                <p>Advanced behavioral analysis of your typing patterns</p>
+            </div>
+
+            <div class="coach-main-grid">
+                <div class="coach-card glassmorphism">
+                    <div class="cc-header">
+                        <span class="cc-icon">🤖</span>
+                        <h3>Neural Verdict</h3>
+                    </div>
+                    <div id="verdict-text" class="coach-msg">Loading intelligence report...</div>
+                </div>
+
+                <div class="coach-card glassmorphism">
+                    <div class="cc-header">
+                        <span class="cc-icon">⭐</span>
+                        <h3>Skill Ratings</h3>
+                    </div>
+                    <div class="coach-ratings-row" style="border:none;">
+                        <div class="rating-item"><span>Speed</span><div id="rate-speed" class="stars">☆☆☆☆☆</div></div>
+                        <div class="rating-item"><span>Accuracy</span><div id="rate-acc" class="stars">☆☆☆☆☆</div></div>
+                        <div class="rating-item"><span>Consistency</span><div id="rate-cons" class="stars">☆☆☆☆☆</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="coach-card glassmorphism" style="margin-top:2rem;">
+                <div class="cc-header"><span class="cc-icon">🎯</span><h3>Finger Mechanics (Weak Keys)</h3></div>
+                <div class="weak-analysis-content" style="display:flex; gap:2rem; align-items:center;">
+                    <div class="weak-pill-group" id="weak-keys"></div>
+                    <p id="phase-msg" style="opacity:0.6; font-size:0.9rem;"></p>
+                </div>
+            </div>
+
+            <div style="margin-top:3rem; text-align:center;">
+                <a href="practice.html" class="primary-btn" style="text-decoration:none; padding: 1rem 3rem;">Enter Training Academy ⚡</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (!user) {
+                    document.getElementById('verdict-text').textContent = "Please sign in to view your performance history.";
+                    return;
+                }
+
+                // Fetch latest test data
+                const userRef = db.collection('users').doc(user.uid);
+                const historySnap = await userRef.collection('history').orderBy('timestamp', 'desc').limit(1).get();
+                
+                if (historySnap.empty) {
+                    document.getElementById('verdict-text').textContent = "No session data found. Complete a test first!";
+                    return;
+                }
+
+                const lastTest = historySnap.docs[0].data();
+                renderAnalysis(lastTest);
+            });
+        });
+
+        function renderAnalysis(data) {
+            const wpm = data.wpm || 0;
+            const acc = data.accuracy || 0;
+            const mistakes = data.mistakes || 0;
+
+            document.getElementById('rate-speed').textContent = '⭐'.repeat(Math.ceil(wpm/20)) + '☆'.repeat(5 - Math.ceil(wpm/20));
+            document.getElementById('rate-acc').textContent = '⭐'.repeat(Math.ceil(acc/20)) + '☆'.repeat(5 - Math.ceil(acc/20));
+            document.getElementById('rate-cons').textContent = '⭐⭐⭐☆☆';
+
+            let verdict = "Impressive performance! ";
+            if (acc < 90) verdict = "Accuracy is your primary bottleneck. Focus on steady rhythm over raw speed.";
+            else if (wpm < 50) verdict = "You have great control, now work on finger velocity in Speed mode.";
+            else verdict = "You are approaching elite levels. Fine-tune your rhythm to eliminate micro-stutters.";
+            
+            document.getElementById('verdict-text').textContent = verdict;
+            document.getElementById('phase-msg').textContent = "Analysis based on your most recent session.";
+        }
+    </script>
+</body>
+</html>
