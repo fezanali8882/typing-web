@@ -52,7 +52,8 @@ let state = {
     heatmap: {},
     soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
     replayBuffer: [],
-    lastKeystrokeTime: 0
+    lastKeystrokeTime: 0,
+    mistakeLog: {}
 };
 
 // DOM Elements
@@ -557,6 +558,7 @@ function startSession() {
     state.wpmHistory = [];
     state.rawWpmHistory = [];
     state.replayBuffer = [];
+    state.mistakeLog = {};
     state.lastKeystrokeTime = Date.now();
 
     elements.typingInput.value = '';
@@ -640,6 +642,7 @@ function resetTest() {
     state.wpmHistory = [];
     state.rawWpmHistory = [];
     state.replayBuffer = [];
+    state.mistakeLog = {};
     state.timeLeft = state.mode === 'words' ? 0 : state.timeLimit;
 
     // Reset Elements

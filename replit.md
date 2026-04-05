@@ -20,9 +20,10 @@ A web-based typing speed test application with real-time analytics, gamification
 ## Tech Stack
 
 - **Frontend**: Vanilla HTML5, CSS3, JavaScript (ES6+)
+- **Theme**: Cyberpunk/Mastermind — pure black (#080810) bg, electric cyan (#00d4ff) primary, deep violet (#7c3aed) secondary, JetBrains Mono for typing area
 - **Backend / Auth**: Firebase v9 (Authentication + Firestore)
 - **Charts**: Chart.js (via CDN)
-- **Fonts**: Google Fonts — Inter & Outfit (via CDN)
+- **Fonts**: Google Fonts — Inter, Outfit & JetBrains Mono (via CDN)
 - **No build step** — all dependencies loaded from CDN
 
 ## Running the App
