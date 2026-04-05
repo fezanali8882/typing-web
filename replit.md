@@ -7,15 +7,23 @@ A web-based typing speed test application with real-time analytics, gamification
 ```
 .
 ├── index.html       # Main typing test UI
-├── auth.html        # Login / Sign-up page
-├── practice.html    # Dedicated practice drills
-├── analysis.html    # Detailed session analytics
-├── handler.html     # OAuth / redirect handler
+├── auth.html        # Login / Sign-up page (next-level split-screen design)
+├── analysis.html    # Detailed session analytics (from Firestore)
 ├── app.js           # Core typing engine & game logic
 ├── firebase.js      # Firebase auth & Firestore integration
 ├── style.css        # Global styles (glassmorphism dark theme)
-└── README.md        # Project README
+└── replit.md        # Project documentation
 ```
+
+## Key Features
+
+- **Random text generation**: Each session picks random words from difficulty-specific pools (easy/intermediate/hard) — never the same text twice
+- **2-line typing display**: Shows exactly 2 lines with smooth auto-scroll as user types
+- **3-2-1 countdown**: Full-screen SVG ring countdown with GO! flash; controls panel slides away during test
+- **Firebase auth**: Email/password + Google OAuth, with email verification on signup
+- **Real-time analytics**: Live WPM, accuracy, keystroke heatmap
+- **Global leaderboard**: Firestore-backed rankings
+- **Analysis page**: Performance breakdown from latest Firestore session (WPM chart, grade, verdict, skill bars, weak keys)
 
 ## Tech Stack
 

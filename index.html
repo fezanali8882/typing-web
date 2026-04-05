@@ -24,8 +24,8 @@
             </div>
             <div class="nav-right">
                 <div class="main-hub-nav">
-                    <a href="practice.html" class="nav-hub-link" id="nav-practice">
-                        <span class="link-icon">⚡</span> Practice
+                    <a href="analysis.html" class="nav-hub-link" id="nav-analysis">
+                        <span class="link-icon">📊</span> Analysis
                     </a>
                     <a href="#" class="nav-hub-link" id="nav-leaderboard" onclick="showLeaderboard()">
                         <span class="link-icon">🏆</span> Leaderboard
@@ -230,41 +230,6 @@
             <div class="test-actions" style="margin-top: 2rem; margin-bottom: 3rem; display: flex; gap: 1.5rem; justify-content: center;">
                 <button class="primary-btn" onclick="resetTest()" style="max-width: 300px; padding: 1rem 2rem;">START NEW SESSION 🔄</button>
                 <button id="watch-replay-btn" class="secondary-btn" style="max-width: 300px; padding: 1rem 2rem;">🎥 Watch Replay</button>
-            </div>
-        </div>
-
-        <!-- Dedicated Practice & Drill Page 🎮 -->
-        <div id="practice-section" class="results-container" style="display: none;">
-            <div class="results-header" style="text-align: center;">
-                <span class="rank-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">Training Hub ⚡</span>
-                <h2>Practice Academy</h2>
-                <p>Master specific skills with targeted drilling</p>
-            </div>
-
-            <div class="practice-grid">
-                <div class="practice-card glassmorphism" onclick="startPractice('accuracy')">
-                    <div class="pc-icon">🎯</div>
-                    <h3>Precision Training</h3>
-                    <p>No mistakes allowed. If you miss, the drill ends. Build clinical accuracy.</p>
-                    <button class="mini-btn">Start Drill</button>
-                </div>
-                <div class="practice-card glassmorphism" onclick="startPractice('speed')">
-                    <div class="pc-icon">⚡</div>
-                    <h3>Speed Burst</h3>
-                    <p>Push your WPM limits by ignoring minor errors. Focus on raw velocity.</p>
-                    <button class="mini-btn">Start Drill</button>
-                </div>
-                <div class="practice-card glassmorphism" id="weak-drill-card" onclick="startPractice('weak')">
-                    <div class="pc-icon">🔤</div>
-                    <h3>Weak Key Drill</h3>
-                    <p>Focus specifically on your error keys. Master the characters you miss.</p>
-                    <button class="mini-btn">Start Drill</button>
-                </div>
-            </div>
-
-            <div class="test-actions" style="margin-top: 4rem; justify-content: center;">
-                <button class="secondary-btn" onclick="showCoachingDashboard()">Back to Coach Analysis 🧠</button>
-                <button class="primary-btn" onclick="resetTest()">Main Engine 🏠</button>
             </div>
         </div>
 

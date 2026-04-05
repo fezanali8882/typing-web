@@ -12,25 +12,72 @@ const KEYBOARD_LAYOUT = [
     ["Space"]
 ];
 
-const difficultyData = {
+// Word pools for random text generation
+const wordPools = {
     easy: [
-        "the quick brown fox jumps over the lazy dog a slow white rabbit hops into the green forest summer days are long and warm perfect for reading a good book under a shady tree",
-        "alice was beginning to get very tired of sitting by her sister on the bank and of having nothing to do once or twice she had peeped into the book her sister was reading",
-        "to be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune or to take arms against a sea of troubles",
-        "dreams are small windows to another world where everything is possible and nothing is forbidden the stars shine bright in the quiet night sky guiding travelers on their long journey home"
+        "the","a","and","is","it","in","of","to","be","was","he","she","they","we","you","are","do","go",
+        "can","my","on","at","by","up","or","an","so","if","no","me","us","him","her","his","but","not",
+        "with","that","this","from","have","had","will","just","like","time","get","one","out","day","now",
+        "how","your","our","its","new","who","did","see","way","may","say","big","old","run","man","her",
+        "his","has","him","let","ask","cat","dog","sun","sky","bird","tree","river","water","house","road",
+        "book","hand","face","door","fire","wind","rain","snow","moon","star","fish","food","home","farm",
+        "red","blue","green","black","white","long","good","nice","soft","warm","cool","fast","slow","kind",
+        "play","walk","talk","work","read","help","grow","make","take","find","give","know","look","move",
+        "love","life","hope","care","hear","feel","rest","wait","come","stop","stay","fall","hold","open",
+        "sit","eat","top","cup","pen","bag","hat","bed","box","car","map","air","sky","art","joy","end"
     ],
     intermediate: [
-        "The quick brown fox jumps over the lazy dog. A slow white rabbit hops into the green forest. Summer days are long and warm, perfect for reading a good book under a shady tree.",
-        "Success is not final, failure is not fatal: it is the courage to continue that counts. In the middle of every difficulty lies opportunity. Complexity is your enemy. Stay hungry, stay foolish.",
-        "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity.",
-        "All happy families are alike; each unhappy family is unhappy in its own way. Under the dark blue sky, the old man sat by the sea, thinking of the great fish he once caught."
+        "success","failure","courage","challenge","improve","practice","achieve","balance","develop","explore",
+        "wonder","create","believe","inspire","effort","journey","purpose","growth","wisdom","passion",
+        "discover","pattern","master","connect","design","process","system","progress","measure","reflect",
+        "strategy","clarity","problem","solution","method","concept","insight","context","meaning","result",
+        "however","because","therefore","although","despite","through","between","beyond","during","within",
+        "quality","subject","forward","network","chapter","project","control","support","achieve","release",
+        "morning","evening","perfect","natural","current","dynamic","complex","creative","logical","simple",
+        "provide","require","include","describe","compare","analyze","explain","suggest","produce","observe",
+        "critical","general","specific","positive","negative","primary","central","personal","national","global",
+        "The","In","When","After","Before","While","Once","Since","Until","As","If","Although","However","Yet",
+        "people","world","think","place","point","group","study","level","story","power","voice","focus","value",
+        "digital","modern","future","impact","change","action","energy","effort","chance","force","model","scale",
+        "building","learning","running","writing","reading","speaking","thinking","working","growing","moving"
     ],
     hard: [
-        "The juxtaposition of ancient philosophies with modern technological advancements creates a 3.14159 paradigm in our current @2026 societal evolution. Phenomenal structures often defy conventional physics!",
-        "Call me Ishmael (1851). Some years ago—never mind how long precisely—having little $ or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little.",
-        "The metamorphosis of [psychological] archetypes within the framework of structuralism provides an intricate methodology for analyzing contemporary narratives in post-modern literature at 100% capacity.",
-        "Notwithstanding the inherent complexities (30-60ms) associated with electromagnetic synchronization, the theoretical model #42 proposes a revolutionary approach to quantum computational efficiency!"
+        "juxtaposition","paradigm","infrastructure","metamorphosis","phenomenological","epistemological",
+        "synchronization","electromagnetic","computational","psychological","philosophical","methodology",
+        "notwithstanding","aforementioned","interdisciplinary","extrapolation","quantification","manifestation",
+        "disambiguation","conceptualization","implementation","decentralization","hyperparameters","polymorphism",
+        "asynchronous","encapsulation","abstraction","recursion","algorithm","optimization","cryptography",
+        "authentication","authorization","serialization","deserialization","parallelization","virtualization",
+        "microservices","containerization","orchestration","infrastructure","deployment","configuration",
+        "biochemistry","photosynthesis","mitochondria","chromosome","pharmaceutical","neuroscience","ecosystem",
+        "simultaneously","consequently","fundamentally","substantially","systematically","theoretically",
+        "extraordinarily","predominantly","comprehensively","disproportionately","instantaneously","perpetually",
+        "#42","@2026","3.14159","100%","$1,024","(2^10)","[CRITICAL]","{delta}","<EOF>","0x1F4A9",
+        "Version 3.0","API-v2","RFC-7519","ISO-8601","UTF-8","HTTP/2","TCP/IP","SQL-99","IEEE-754"
     ]
+};
+
+// Generate random text from word pool (~wordCount words, no repeat adjacents)
+function generateText(difficulty, wordCount = 80) {
+    const pool = wordPools[difficulty] || wordPools.easy;
+    const words = [];
+    let lastWord = '';
+    for (let i = 0; i < wordCount; i++) {
+        let word;
+        let attempts = 0;
+        do {
+            word = pool[Math.floor(Math.random() * pool.length)];
+            attempts++;
+        } while (word === lastWord && attempts < 5);
+        words.push(word);
+        lastWord = word;
+    }
+    return words.join(' ');
+}
+
+// Legacy difficultyData kept as fallback (not used for random mode)
+const difficultyData = {
+    easy: [], intermediate: [], hard: []
 };
 
 // Application State
@@ -146,7 +193,7 @@ function initKeyboard() {
 // ----------------------------------------------------
 
 function hideAllHubs() {
-    const sectionIds = ['results-section', 'practice-section', 'main-typing-container', 'leaderboard-section'];
+    const sectionIds = ['results-section', 'main-typing-container', 'leaderboard-section'];
     sectionIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -212,19 +259,6 @@ window.showLeaderboard = async function() {
     }
 };
 
-/** ⚡ Switch to Training Academy Hub (SPA fallback) */
-window.openPracticeSection = function() {
-    console.log("Transitioning to local Practice Hub...");
-    hideAllHubs();
-    const practiceNode = document.getElementById('practice-section');
-    if (practiceNode) {
-        practiceNode.style.display = 'block';
-        practiceNode.style.animation = 'slideUp 0.6s ease-out';
-    } else {
-        // Fallback or external link
-        window.location.href = 'practice.html';
-    }
-};
 // ----------------------------------------------------
 
 function updateHeatmapUI(key, isMistake = false) {
@@ -267,19 +301,11 @@ function loadParagraph() {
     if (state.customText) {
         text = state.customText;
     } else {
-        const list = difficultyData[state.currentDifficulty];
-        let randomIndex;
-        
-        // Ensure we don't pick the same paragraph twice in a row
-        do {
-            randomIndex = Math.floor(Math.random() * list.length);
-        } while (randomIndex === state.lastParagraphIndex && list.length > 1);
-        
-        state.lastParagraphIndex = randomIndex;
-        text = list[randomIndex];
-        
-        // Ensure enough length for at least 2 minutes of typing at high speed
-        while (text.length < 3000) text += " " + text;
+        // Generate fresh random text from word pool every time
+        const baseText = generateText(state.currentDifficulty, 100);
+        text = baseText;
+        // Ensure enough length for extended sessions
+        while (text.length < 3000) text += ' ' + generateText(state.currentDifficulty, 80);
     }
 
     elements.paragraphDisplay.innerHTML = '';
@@ -408,21 +434,19 @@ function initTyping(e) {
 }
 
 function handleAutoScroll() {
-    // Precise Line-by-Line Auto-scroll
+    // 2-line display: line-height 3rem=48px, padding-top 0.75rem=12px
     const chars = elements.paragraphDisplay.querySelectorAll('span');
     if (state.charIndex < chars.length) {
         const curr = chars[state.charIndex];
-        const lineHeight = 38; // Defined exactly in CSS line-height
-        const padding = 12; // 0.75rem padding top
+        const lineHeight = 48; // 3rem line-height
+        const padding = 12;   // 0.75rem padding top
 
-        // Calculate current line index (0-based)
         const topPos = curr.offsetTop;
 
-        // Use a safe halfway threshold (1.5x) to robustly detect the 3rd line regardless of subpixels
-        if (topPos > padding + (lineHeight * 1.5)) {
-            // Scroll down perfectly by offsetting to keep current line at the bottom
+        // When cursor is on line 3+ (topPos > line1 bottom), scroll to keep line 2 visible
+        if (topPos > padding + lineHeight) {
             elements.paragraphDisplay.scrollTop = topPos - lineHeight - padding;
-        } else if (topPos < padding + (lineHeight * 0.5)) {
+        } else if (topPos <= padding) {
             elements.paragraphDisplay.scrollTop = 0;
         }
     }
@@ -690,7 +714,7 @@ function resetTest() {
     // Perma-Fix: Ensure Heatmap and Typing Area are visible ⌨️
     initKeyboard();
     
-    const sections = ['results-section', 'coaching-section', 'practice-section', 'leaderboard-section'];
+    const sections = ['results-section', 'leaderboard-section'];
     sections.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -1224,13 +1248,6 @@ function playbackSession() {
 
     elements.replayModal.style.display = 'flex';
     setTimeout(nextStep, 500);
-}
-// Unified Hub Section Management 🔄
-function hideAllHubs() {
-    ['results-section', 'coaching-section', 'practice-section', 'main-typing-container', 'leaderboard-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
 }
 
 elements.watchReplayBtn.addEventListener('click', playbackSession);
