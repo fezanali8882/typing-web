@@ -3,109 +3,704 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Dashboard | TypeFast AI</title>
+    <title>Analysis | TypeFast</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { padding: 4rem 2rem; background: #0f172a; min-height: 100vh; }
-        .nav-back { position: fixed; top: 2rem; left: 2rem; z-index: 100; }
+        /* ── Page-specific layout ── */
+        .analysis-page {
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        .analysis-hero {
+            text-align: center;
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+        }
+
+        .analysis-hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 20%, var(--primary) 60%, var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-hero p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .analysis-grid {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* ── Stat Cards Row ── */
+        .stat-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .an-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .an-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .an-stat-card:hover { border-color: var(--border-bright); transform: translateY(-3px); }
+        .an-stat-card:hover::before { opacity: 1; }
+
+        .an-stat-card.cyan::before  { background: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+        .an-stat-card.violet::before { background: var(--secondary); box-shadow: 0 0 10px var(--secondary-glow); }
+        .an-stat-card.green::before  { background: var(--green); box-shadow: 0 0 10px var(--green-glow); }
+        .an-stat-card.red::before    { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .an-stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .an-stat-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+        }
+
+        .an-stat-value {
+            font-family: var(--font-display);
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .an-stat-value.cyan   { color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
+        .an-stat-value.violet { color: var(--secondary); text-shadow: 0 0 20px var(--secondary-glow); }
+        .an-stat-value.green  { color: var(--green); text-shadow: 0 0 20px var(--green-glow); }
+        .an-stat-value.red    { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
+
+        .an-stat-sub {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+        }
+
+        /* ── Two-column grid ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1rem;
+        }
+
+        /* ── Panel card ── */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-icon { font-size: 1.2rem; }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .panel-badge {
+            margin-left: auto;
+            padding: 0.2rem 0.65rem;
+            background: rgba(0, 212, 255, 0.07);
+            border: 1px solid var(--border-bright);
+            border-radius: 50px;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        /* Verdict text */
+        .verdict-text {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: var(--text);
+            min-height: 80px;
+        }
+
+        .verdict-text .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Grade display */
+        .grade-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+
+        .grade-letter {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .grade-info { text-align: left; }
+        .grade-tag { font-size: 1.1rem; font-weight: 800; font-family: var(--font-display); }
+        .grade-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        /* Skill Ratings */
+        .ratings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .rating-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .rating-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .rating-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rating-bar-fill.cyan   { background: linear-gradient(90deg, var(--primary), rgba(0,212,255,0.6)); box-shadow: 0 0 8px var(--primary-glow); }
+        .rating-bar-fill.violet { background: linear-gradient(90deg, var(--secondary), rgba(124,58,237,0.6)); box-shadow: 0 0 8px var(--secondary-glow); }
+        .rating-bar-fill.green  { background: linear-gradient(90deg, var(--green), rgba(0,255,136,0.6)); box-shadow: 0 0 8px var(--green-glow); }
+
+        .rating-pct {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 800;
+            width: 36px;
+            text-align: right;
+            color: var(--text);
+        }
+
+        /* Weak Keys */
+        .weak-keys-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            min-height: 50px;
+            align-items: flex-start;
+        }
+
+        .weak-key-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.85rem;
+            background: rgba(255, 51, 102, 0.08);
+            border: 1px solid rgba(255, 51, 102, 0.25);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .weak-key-count {
+            font-size: 0.65rem;
+            background: rgba(255, 51, 102, 0.15);
+            padding: 0.1rem 0.4rem;
+            border-radius: 50px;
+            color: var(--accent);
+            font-family: var(--font-ui);
+        }
+
+        .empty-state {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Chart panel */
+        .chart-panel {
+            height: 220px;
+            position: relative;
+        }
+
+        /* CTA row */
+        .cta-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .cta-row a {
+            text-decoration: none;
+        }
+
+        /* Sign-in notice */
+        .signin-notice {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .signin-notice h2 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .signin-notice p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* Skeleton pulse for loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-elevated) 0%, rgba(255,255,255,0.04) 50%, var(--bg-elevated) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
+            .two-col { grid-template-columns: 1fr; }
+            .cta-row { flex-direction: column; align-items: center; }
+        }
     </style>
 </head>
-<body class="dark-theme">
+<body class="dark-theme analysis-page">
+
+    <!-- Background blobs -->
     <div class="background-blob"></div>
-    
-    <div class="nav-back">
-        <a href="index.html" class="primary-btn" style="padding: 0.75rem 1.5rem; text-decoration: none;">← Back to Test</a>
-    </div>
+    <div class="background-blob-2"></div>
 
-    <main class="main-container" style="max-width: 1000px; margin: 0 auto;">
-        <div class="results-container">
-            <div class="results-header">
-                <span class="rank-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); border-color: rgba(99, 102, 241, 0.2);">AI Coach 🧠</span>
-                <h2>Performance Intelligence</h2>
-                <p>Advanced behavioral analysis of your typing patterns</p>
+    <!-- Navbar -->
+    <nav class="navbar glassmorphism">
+        <div class="nav-container">
+            <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">TypeFast</span>
             </div>
-
-            <div class="coach-main-grid">
-                <div class="coach-card glassmorphism">
-                    <div class="cc-header">
-                        <span class="cc-icon">🤖</span>
-                        <h3>Neural Verdict</h3>
-                    </div>
-                    <div id="verdict-text" class="coach-msg">Loading intelligence report...</div>
-                </div>
-
-                <div class="coach-card glassmorphism">
-                    <div class="cc-header">
-                        <span class="cc-icon">⭐</span>
-                        <h3>Skill Ratings</h3>
-                    </div>
-                    <div class="coach-ratings-row" style="border:none;">
-                        <div class="rating-item"><span>Speed</span><div id="rate-speed" class="stars">☆☆☆☆☆</div></div>
-                        <div class="rating-item"><span>Accuracy</span><div id="rate-acc" class="stars">☆☆☆☆☆</div></div>
-                        <div class="rating-item"><span>Consistency</span><div id="rate-cons" class="stars">☆☆☆☆☆</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="coach-card glassmorphism" style="margin-top:2rem;">
-                <div class="cc-header"><span class="cc-icon">🎯</span><h3>Finger Mechanics (Weak Keys)</h3></div>
-                <div class="weak-analysis-content" style="display:flex; gap:2rem; align-items:center;">
-                    <div class="weak-pill-group" id="weak-keys"></div>
-                    <p id="phase-msg" style="opacity:0.6; font-size:0.9rem;"></p>
-                </div>
-            </div>
-
-            <div style="margin-top:3rem; text-align:center;">
-                <a href="practice.html" class="primary-btn" style="text-decoration:none; padding: 1rem 3rem;">Enter Training Academy ⚡</a>
+            <div class="nav-right">
+                <nav class="main-hub-nav">
+                    <a href="index.html" class="nav-hub-link">
+                        <span class="link-icon">⚡</span> Test
+                    </a>
+                    <a href="practice.html" class="nav-hub-link">
+                        <span class="link-icon">🎯</span> Practice
+                    </a>
+                </nav>
+                <a href="index.html" class="action-pill">
+                    <span class="pill-icon">←</span>
+                    <span class="pill-text">Back to Test</span>
+                </a>
             </div>
         </div>
-    </main>
+    </nav>
+
+    <!-- Hero -->
+    <div class="analysis-hero slide-up">
+        <span class="rank-badge">Intelligence Report</span>
+        <h1>Performance Analysis</h1>
+        <p>Deep-dive breakdown of your typing patterns and neural velocity</p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="analysis-grid" id="analysis-content">
+
+        <!-- Loading / Not signed in state -->
+        <div id="signin-gate" class="signin-notice" style="display:none;">
+            <div style="font-size:3rem; margin-bottom:1rem;">🔐</div>
+            <h2>Sign In Required</h2>
+            <p>Connect your account to unlock full performance intelligence.</p>
+            <a href="auth.html" class="primary-btn" style="text-decoration:none; display:inline-block; padding: 0.85rem 2.5rem;">Sign In / Register</a>
+        </div>
+
+        <div id="no-data-gate" class="signin-notice" style="display:none;">
+            <div style="font-size:3rem; margin-bottom:1rem;">📊</div>
+            <h2>No Data Yet</h2>
+            <p>Complete a typing test first to generate your analysis report.</p>
+            <a href="index.html" class="primary-btn" style="text-decoration:none; display:inline-block; padding: 0.85rem 2.5rem;">Start a Test</a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stat-cards-row slide-up" id="stats-row" style="display:none;">
+            <div class="an-stat-card cyan">
+                <span class="an-stat-icon">⚡</span>
+                <div class="an-stat-label">Speed</div>
+                <div class="an-stat-value cyan" id="an-wpm">—</div>
+                <span class="an-stat-sub">words per minute</span>
+            </div>
+            <div class="an-stat-card violet">
+                <span class="an-stat-icon">🎯</span>
+                <div class="an-stat-label">Accuracy</div>
+                <div class="an-stat-value violet" id="an-acc">—</div>
+                <span class="an-stat-sub">% precision</span>
+            </div>
+            <div class="an-stat-card green">
+                <span class="an-stat-icon">⌨️</span>
+                <div class="an-stat-label">Chars/Min</div>
+                <div class="an-stat-value green" id="an-cpm">—</div>
+                <span class="an-stat-sub">raw throughput</span>
+            </div>
+            <div class="an-stat-card red">
+                <span class="an-stat-icon">✗</span>
+                <div class="an-stat-label">Mistakes</div>
+                <div class="an-stat-value red" id="an-mistakes">—</div>
+                <span class="an-stat-sub">total errors</span>
+            </div>
+        </div>
+
+        <!-- Verdict + Grade -->
+        <div class="two-col slide-up" id="verdict-row" style="display:none;">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">🤖</span>
+                    <span class="panel-title">Neural Verdict</span>
+                    <span class="panel-badge">AI Analysis</span>
+                </div>
+                <p class="verdict-text" id="verdict-text">Analysing your session data...</p>
+            </div>
+            <div class="panel" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div class="panel-header" style="width:100%;">
+                    <span class="panel-icon">🏆</span>
+                    <span class="panel-title">Session Grade</span>
+                </div>
+                <div class="grade-display" id="grade-display">
+                    <div class="grade-letter" id="grade-letter" style="color: var(--primary); text-shadow: 0 0 30px var(--primary-glow);">—</div>
+                    <div class="grade-info">
+                        <div class="grade-tag" id="grade-tag">—</div>
+                        <div class="grade-desc" id="grade-desc">Complete a test to get graded</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill Ratings + Weak Keys -->
+        <div class="two-col slide-up" id="skills-row" style="display:none;">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">⭐</span>
+                    <span class="panel-title">Skill Ratings</span>
+                </div>
+                <div class="ratings-grid">
+                    <div class="rating-row">
+                        <span class="rating-label">Speed</span>
+                        <div class="rating-bar-bg">
+                            <div class="rating-bar-fill cyan" id="bar-speed" style="width:0%"></div>
+                        </div>
+                        <span class="rating-pct" id="pct-speed">0%</span>
+                    </div>
+                    <div class="rating-row">
+                        <span class="rating-label">Accuracy</span>
+                        <div class="rating-bar-bg">
+                            <div class="rating-bar-fill violet" id="bar-acc" style="width:0%"></div>
+                        </div>
+                        <span class="rating-pct" id="pct-acc">0%</span>
+                    </div>
+                    <div class="rating-row">
+                        <span class="rating-label">Consistency</span>
+                        <div class="rating-bar-bg">
+                            <div class="rating-bar-fill green" id="bar-cons" style="width:0%"></div>
+                        </div>
+                        <span class="rating-pct" id="pct-cons">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">🎯</span>
+                    <span class="panel-title">Weak Keys</span>
+                    <span class="panel-badge" id="weak-count-badge">0 found</span>
+                </div>
+                <div class="weak-keys-area" id="weak-keys">
+                    <span class="empty-state">✓ No weak keys detected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WPM Chart -->
+        <div class="panel slide-up" id="chart-row" style="display:none;">
+            <div class="panel-header">
+                <span class="panel-icon">📈</span>
+                <span class="panel-title">Live WPM Timeline</span>
+                <span class="panel-badge">Session Replay</span>
+            </div>
+            <div class="chart-panel">
+                <canvas id="wpm-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="cta-row slide-up" id="cta-row" style="display:none;">
+            <a href="index.html" class="primary-btn" style="padding: 0.9rem 2.5rem; display:inline-block; text-decoration:none; min-width:200px; text-align:center;">
+                Try Again ↻
+            </a>
+            <a href="practice.html" class="secondary-btn" style="padding: 0.9rem 2.5rem; display:inline-block; text-decoration:none; min-width:200px; text-align:center;">
+                Enter Training ⚡
+            </a>
+        </div>
+
+    </div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        // ── Helpers ──────────────────────────────────────────────
+        function showSections() {
+            ['stats-row', 'verdict-row', 'skills-row', 'chart-row', 'cta-row'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = ''; el.style.opacity = 1; }
+            });
+        }
+
+        function gradeFromWpm(wpm, acc) {
+            const score = wpm * (acc / 100);
+            if (score >= 90)  return { letter: 'S', tag: 'Elite Typist',    desc: 'Top 1% globally', color: '#f59e0b', glow: 'rgba(245,158,11,0.4)' };
+            if (score >= 70)  return { letter: 'A', tag: 'Advanced',        desc: 'Superior performance', color: 'var(--green)', glow: 'var(--green-glow)' };
+            if (score >= 50)  return { letter: 'B', tag: 'Proficient',      desc: 'Above average speed', color: 'var(--primary)', glow: 'var(--primary-glow)' };
+            if (score >= 35)  return { letter: 'C', tag: 'Intermediate',    desc: 'Solid foundation', color: '#f97316', glow: 'rgba(249,115,22,0.35)' };
+            return               { letter: 'D', tag: 'Developing',      desc: 'Keep practising', color: 'var(--text-muted)', glow: 'none' };
+        }
+
+        function buildVerdict(wpm, acc, mistakes) {
+            if (acc >= 98 && wpm >= 80) return `You are operating at <span class="highlight">elite velocity</span> with near-perfect accuracy. Micro-stutter elimination is your only remaining frontier.`;
+            if (acc < 88)               return `Accuracy is your <span class="highlight">primary bottleneck</span> at ${acc}%. Slow down by 10–15 WPM and prioritise rhythm over raw speed.`;
+            if (wpm < 40)               return `Solid control at ${acc}% accuracy. Now focus on <span class="highlight">finger velocity</span> — target 50 WPM with Speed Mode drills.`;
+            if (wpm >= 60 && acc >= 95) return `Strong session — ${wpm} WPM at ${acc}% accuracy. Work on <span class="highlight">consistency</span> across longer texts to hit your next tier.`;
+            return `Good balance of speed and accuracy. Push past <span class="highlight">${wpm + 10} WPM</span> in your next session while holding ${acc}%+ accuracy.`;
+        }
+
+        function setRatingBar(barId, pctId, pct) {
+            const bar = document.getElementById(barId);
+            const pctEl = document.getElementById(pctId);
+            if (bar) setTimeout(() => bar.style.width = pct + '%', 100);
+            if (pctEl) pctEl.textContent = pct + '%';
+        }
+
+        // ── Render ───────────────────────────────────────────────
+        function renderAnalysis(data) {
+            const wpm      = data.wpm || 0;
+            const acc      = data.accuracy || 0;
+            const cpm      = data.cpm || Math.round(wpm * 5);
+            const mistakes = data.mistakes || 0;
+            const wpmHistory = data.wpmHistory || [];
+
+            // Show all sections
+            showSections();
+
+            // Stats
+            document.getElementById('an-wpm').textContent      = wpm;
+            document.getElementById('an-acc').textContent      = acc + '%';
+            document.getElementById('an-cpm').textContent      = cpm;
+            document.getElementById('an-mistakes').textContent = mistakes;
+
+            // Grade
+            const grade = gradeFromWpm(wpm, acc);
+            const gl = document.getElementById('grade-letter');
+            gl.textContent = grade.letter;
+            gl.style.color = grade.color;
+            gl.style.textShadow = `0 0 30px ${grade.glow}`;
+            document.getElementById('grade-tag').textContent  = grade.tag;
+            document.getElementById('grade-desc').textContent = grade.desc;
+
+            // Verdict
+            document.getElementById('verdict-text').innerHTML = buildVerdict(wpm, acc, mistakes);
+
+            // Skill bars
+            const speedPct = Math.min(100, Math.round((wpm / 120) * 100));
+            const accPct   = Math.min(100, acc);
+            const consPct  = wpmHistory.length > 2
+                ? Math.min(100, Math.max(0, 100 - Math.round((Math.max(...wpmHistory) - Math.min(...wpmHistory)) / Math.max(...wpmHistory) * 100)))
+                : 65;
+
+            setRatingBar('bar-speed', 'pct-speed', speedPct);
+            setRatingBar('bar-acc',   'pct-acc',   accPct);
+            setRatingBar('bar-cons',  'pct-cons',  consPct);
+
+            // Weak keys (stored in mistakeLog if available)
+            const weakKeys = data.mistakeLog || {};
+            const weakContainer = document.getElementById('weak-keys');
+            const sorted = Object.entries(weakKeys).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+            if (sorted.length > 0) {
+                weakContainer.innerHTML = '';
+                sorted.forEach(([key, count]) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'weak-key-chip';
+                    chip.innerHTML = `<span>${key === ' ' ? 'SPACE' : key.toUpperCase()}</span><span class="weak-key-count">×${count}</span>`;
+                    weakContainer.appendChild(chip);
+                });
+                const badge = document.getElementById('weak-count-badge');
+                if (badge) badge.textContent = sorted.length + ' found';
+            }
+
+            // WPM Chart
+            if (wpmHistory.length > 1) {
+                const ctx = document.getElementById('wpm-chart').getContext('2d');
+                const labels = wpmHistory.map((_, i) => `${i + 1}s`);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'WPM',
+                            data: wpmHistory,
+                            borderColor: 'var(--primary)',
+                            backgroundColor: 'rgba(0, 212, 255, 0.06)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointHoverBackgroundColor: 'var(--primary)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 800 },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(13, 13, 26, 0.95)',
+                                borderColor: 'var(--border-bright)',
+                                borderWidth: 1,
+                                titleColor: 'var(--text-muted)',
+                                bodyColor: '#00d4ff',
+                                bodyFont: { family: "'Outfit'", weight: '800', size: 14 },
+                                padding: 10,
+                                callbacks: {
+                                    label: ctx => ` ${ctx.raw} WPM`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+                                ticks: { color: 'rgba(232,234,246,0.3)', font: { size: 11 }, maxTicksLimit: 10 }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+                                ticks: { color: 'rgba(232,234,246,0.3)', font: { size: 11 } },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('chart-row').style.display = 'none';
+            }
+        }
+
+        // ── Boot ─────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
             firebase.auth().onAuthStateChanged(async (user) => {
                 if (!user) {
-                    document.getElementById('verdict-text').textContent = "Please sign in to view your performance history.";
+                    document.getElementById('signin-gate').style.display = 'block';
                     return;
                 }
 
-                // Fetch latest test data
-                const userRef = db.collection('users').doc(user.uid);
-                const historySnap = await userRef.collection('history').orderBy('timestamp', 'desc').limit(1).get();
-                
-                if (historySnap.empty) {
-                    document.getElementById('verdict-text').textContent = "No session data found. Complete a test first!";
-                    return;
-                }
+                try {
+                    const userRef = db.collection('users').doc(user.uid);
+                    const historySnap = await userRef
+                        .collection('history')
+                        .orderBy('timestamp', 'desc')
+                        .limit(1)
+                        .get();
 
-                const lastTest = historySnap.docs[0].data();
-                renderAnalysis(lastTest);
+                    if (historySnap.empty) {
+                        document.getElementById('no-data-gate').style.display = 'block';
+                        return;
+                    }
+
+                    renderAnalysis(historySnap.docs[0].data());
+                } catch (err) {
+                    console.error('Analysis load error:', err);
+                    document.getElementById('no-data-gate').style.display = 'block';
+                }
             });
         });
-
-        function renderAnalysis(data) {
-            const wpm = data.wpm || 0;
-            const acc = data.accuracy || 0;
-            const mistakes = data.mistakes || 0;
-
-            document.getElementById('rate-speed').textContent = '⭐'.repeat(Math.ceil(wpm/20)) + '☆'.repeat(5 - Math.ceil(wpm/20));
-            document.getElementById('rate-acc').textContent = '⭐'.repeat(Math.ceil(acc/20)) + '☆'.repeat(5 - Math.ceil(acc/20));
-            document.getElementById('rate-cons').textContent = '⭐⭐⭐☆☆';
-
-            let verdict = "Impressive performance! ";
-            if (acc < 90) verdict = "Accuracy is your primary bottleneck. Focus on steady rhythm over raw speed.";
-            else if (wpm < 50) verdict = "You have great control, now work on finger velocity in Speed mode.";
-            else verdict = "You are approaching elite levels. Fine-tune your rhythm to eliminate micro-stutters.";
-            
-            document.getElementById('verdict-text').textContent = verdict;
-            document.getElementById('phase-msg').textContent = "Analysis based on your most recent session.";
-        }
     </script>
 </body>
 </html>
