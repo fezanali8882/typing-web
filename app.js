@@ -514,6 +514,10 @@ function startTest() {
     // Ensure a paragraph is loaded BEFORE the countdown starts 📝
     loadParagraph();
 
+    // Hide controls panel with animation
+    const cardHeader = document.getElementById('card-header');
+    if (cardHeader) cardHeader.classList.add('controls-hidden');
+
     // Show Countdown first ⏱️
     const overlay = document.getElementById('countdown-overlay');
     const number = document.getElementById('countdown-number');
@@ -522,20 +526,54 @@ function startTest() {
         return;
     }
 
+    const ringFill = document.getElementById('ring-fill');
+    const countdownLabel = document.getElementById('countdown-label');
+    const countdownSub = document.getElementById('countdown-sub');
+    const CIRCUMFERENCE = 427; // 2 * π * 68
+
+    function setRing(fraction) {
+        if (ringFill) ringFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
+    }
+
+    function resetNumber() {
+        number.className = 'countdown-number';
+        void number.offsetWidth; // force reflow to restart animation
+    }
+
     let count = 3;
+    resetNumber();
     number.textContent = count;
+    setRing(1);
     overlay.style.display = 'flex';
     playSound('keypress');
 
     const countdownInterval = setInterval(() => {
         count--;
         if (count > 0) {
+            resetNumber();
             number.textContent = count;
+            setRing(count / 3);
             playSound('keypress');
         } else {
             clearInterval(countdownInterval);
-            overlay.style.display = 'none';
-            startSession();
+            // Show GO!
+            resetNumber();
+            number.classList.add('go');
+            number.textContent = 'GO!';
+            if (countdownLabel) countdownLabel.textContent = "LET'S GO";
+            if (countdownSub) countdownSub.textContent = 'start typing now';
+            setRing(0);
+            playSound('complete');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Reset overlay state for next time
+                resetNumber();
+                number.textContent = '3';
+                if (countdownLabel) countdownLabel.textContent = 'GET READY';
+                if (countdownSub) countdownSub.textContent = 'prepare yourself';
+                setRing(1);
+                startSession();
+            }, 700);
         }
     }, 1000);
 }
@@ -660,6 +698,10 @@ function resetTest() {
 
     const mainContainer = document.getElementById('main-typing-container');
     if (mainContainer) mainContainer.style.display = 'block';
+
+    // Restore controls panel
+    const cardHeader = document.getElementById('card-header');
+    if (cardHeader) cardHeader.classList.remove('controls-hidden');
 
     loadParagraph();
 }
