@@ -53,7 +53,9 @@ let state = {
     soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
     replayBuffer: [],
     lastKeystrokeTime: 0,
-    mistakeLog: {}
+    mistakeLog: {},
+    isRunning: false,
+    practiceMode: null
 };
 
 // DOM Elements
@@ -318,9 +320,9 @@ function initTyping(e) {
 
     const characters = elements.paragraphDisplay.querySelectorAll('span');
     const typedChar = e.data || elements.typingInput.value.slice(-1);
-    const originalChar = characters[state.charIndex].textContent;
 
     if (state.charIndex < characters.length && (state.mode === 'words' || state.timeLeft > 0)) {
+        const originalChar = characters[state.charIndex].textContent;
         if (e.inputType === 'deleteContentBackward') {
             if (state.charIndex > 0) {
                 // Check if we are trying to backspace into a previous word
