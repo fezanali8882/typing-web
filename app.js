@@ -141,15 +141,6 @@ function initKeyboard() {
     });
 }
 
-function updateHeatmapUI(key, isMistake = false) {
-    let k = key.toLowerCase();
-    if (key === ' ') k = 'space'; 
-    
-    if (!state.heatmap[k]) {
-        state.heatmap[k] = { count: 0, mistakes: 0 };
-    }
-}
-
 // ----------------------------------------------------
 // --- CONSOLIDATED HUB LOGIC (TOP SCOPE) --- 🚀
 // ----------------------------------------------------
@@ -936,12 +927,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Event Listeners
-if (elements.startBtn) elements.startBtn.addEventListener('click', startTest);
-if (elements.restartBtn) elements.restartBtn.addEventListener('click', resetTest);
-if (elements.typingInput) elements.typingInput.addEventListener('input', initTyping);
-
-if (elements.soundToggle) elements.soundToggle.addEventListener('click', toggleSound);
+// Event Listeners (consolidated in DOMContentLoaded below — do not duplicate here)
 
 // Auth Button Logic (Login vs Profile) 👤
 elements.authBtn = document.getElementById('auth-btn');
