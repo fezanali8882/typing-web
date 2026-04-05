@@ -45,25 +45,15 @@
     box-sizing: border-box;
 }
 
-html { scroll-behavior: smooth; height: 100%; }
+html { scroll-behavior: smooth; }
 
 body {
     font-family: var(--font-ui);
     background: var(--bg);
     color: var(--text);
-    height: 100%;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Pages that need scroll get it back */
-body.analysis-page,
-body.practice-page,
-body.auth-page {
-    height: auto;
     min-height: 100vh;
     overflow-x: hidden;
-    overflow-y: auto;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Scrollbar ─── */
@@ -245,17 +235,12 @@ body.auth-page {
     padding: 0 3rem;
     position: relative;
     z-index: 1;
-    height: calc(100vh - 60px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
 }
 
 /* ─── Typing Section — full-width integrated (no floating box) ─── */
 .typing-section {
-    flex: 1;
     border-radius: 0;
-    padding: 1.25rem 0 0.5rem;
+    padding: 1.25rem 0 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -264,7 +249,6 @@ body.auth-page {
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    overflow: hidden;
 }
 
 /* ─── Card Header ─── */
@@ -412,9 +396,7 @@ body.auth-page {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 1rem 1.25rem;
-    flex: 1;
-    min-height: 80px;
-    max-height: 170px;
+    height: 120px;
     overflow: hidden;
     position: relative;
     user-select: none;
@@ -588,6 +570,9 @@ body.auth-page {
 .card-footer {
     display: flex;
     gap: 0.75rem;
+    max-width: 420px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .primary-btn {
